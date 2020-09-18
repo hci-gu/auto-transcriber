@@ -13,9 +13,12 @@
     "url": "git+https://github.com/hci-gu/auto-transcriber.git"
   },
   "dependencies": {
+    "axios": "^0.20.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-scripts": "^3.4.3"
+    "react-dropzone": "^11.1.0",
+    "react-scripts": "^3.4.3",
+    "styled-components": "^5.2.0"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -37,6 +40,5 @@
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/hci-gu/auto-transcriber/issues"
-  },
-  "homepage": "https://github.com/hci-gu/auto-transcriber#readme"
+  }
 }
