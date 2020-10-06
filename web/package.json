@@ -13,11 +13,16 @@
     "url": "git+https://github.com/hci-gu/auto-transcriber.git"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.32",
+    "@fortawesome/free-solid-svg-icons": "^5.15.1",
+    "@fortawesome/react-fontawesome": "^0.1.11",
     "axios": "^0.20.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-dropzone": "^11.1.0",
+    "react-router-dom": "^5.2.0",
     "react-scripts": "^3.4.3",
+    "react-spinners": "^0.9.0",
     "recoil": "0.0.13",
     "styled-components": "^5.2.0"
   },

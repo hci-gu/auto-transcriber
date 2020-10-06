@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useRecoilState } from 'recoil'
 import styled from 'styled-components'
@@ -19,6 +19,7 @@ const getColor = (props) => {
 }
 
 const Container = styled.div`
+  width: 100%;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -58,15 +59,10 @@ export default function StyledDropzone() {
     isDragAccept,
     isDragReject,
   } = useDropzone({ accept: 'audio/*', onDrop })
-  console.log('file', file)
 
   return (
-    <div className="container">
-      <Container
-        {...getRootProps({ isDragActive, isDragAccept, isDragReject })}
-      >
-        {file ? uploadedFile(file) : uploadInput(getInputProps)}
-      </Container>
-    </div>
+    <Container {...getRootProps({ isDragActive, isDragAccept, isDragReject })}>
+      {file ? uploadedFile(file) : uploadInput(getInputProps)}
+    </Container>
   )
 }

@@ -4,12 +4,12 @@ const fs = require('fs')
 const client = new speech.SpeechClient()
 
 module.exports = {
-  transcribe: async (audioBytes) => {
+  transcribe: async (audioBuffer, mimetype) => {
     const audio = {
-      content: audioBytes,
+      content: audioBuffer.toString('base64'),
     }
     const config = {
-      encoding: 'MP3',
+      encoding: mimetype === 'audio/mp3' ? 'MP3' : 'WAV',
       sampleRateHertz: 16000,
       languageCode: 'en-US',
       enableSpeakerDiarization: true,
@@ -20,9 +20,10 @@ module.exports = {
       config,
     })
     const text = response.results
-      .map((result) => result.alternatives[0].transcript)
+      .map((result, i) => `${i + 1}\t${result.alternatives[0].transcript}`)
       .join('\n')
     return {
+      service: 'google',
       text,
     }
   },

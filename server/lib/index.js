@@ -3,7 +3,7 @@ require('dotenv').config()
 const app = require('express')()
 const cors = require('cors')
 const multer = require('multer')
-const google = require('./adapters/google')
+const { transcribe, getTranscriptionStatus } = require('./transcribe')
 
 const upload = multer({})
 
@@ -16,8 +16,18 @@ app.get('/', (_, res) => {
 
 app.post('/upload', upload.single('audio'), async (req, res) => {
   console.log('file uploaded', req.file)
-  const transcriptionResponse = await google.transcribe(
-    req.file.buffer.toString('base64')
-  )
-  res.send(transcriptionResponse)
+  const buffer = req.file.buffer
+  const mimetype = req.file.mimetype
+  const id = await transcribe(buffer, mimetype)
+
+  res.send({
+    id,
+  })
+})
+
+app.get('/:id/status', async (req, res) => {
+  const { id } = req.params
+
+  const services = await getTranscriptionStatus(id)
+  res.send({ services })
 })

@@ -1,7 +1,9 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 import { useRecoilState } from 'recoil'
 import styled from 'styled-components'
-import { fileState, loadingState, transcriptionState } from '../state'
+import ClipLoader from 'react-spinners/ClipLoader'
+import { useHistory } from 'react-router-dom'
+import { fileState, loadingState } from '../state'
 import axios from 'axios'
 import { COLORS } from '../style'
 
@@ -26,7 +28,7 @@ const Button = styled.button`
 export default function UploadButton() {
   const [file] = useRecoilState(fileState)
   const [loading, setLoading] = useRecoilState(loadingState)
-  const [_, setTranscription] = useRecoilState(transcriptionState)
+  const history = useHistory()
 
   const upload = async () => {
     if (!file) return
@@ -42,14 +44,17 @@ export default function UploadButton() {
         },
       }
     )
-    console.log(response)
-    setTranscription(response.data)
+    history.push(`transcription/${response.data.id}`)
+
     setLoading(false)
   }
 
   return (
     <Button onClick={upload} disabled={!file}>
-      {loading ? 'Transcribing...' : 'Transcribe'}
+      {loading ? 'Uploading...' : 'Transcribe'}
+      {loading && (
+        <ClipLoader size={15} css="margin-left: 5px;" color={'#fff'} />
+      )}
     </Button>
   )
 }

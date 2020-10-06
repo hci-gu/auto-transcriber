@@ -7,7 +7,23 @@ export const fileState = atom({
 
 export const transcriptionState = atom({
   key: 'transcription',
-  default: null,
+  default: [
+    // {
+    //   service: 'aws',
+    //   status: 'INPROGRESS',
+    // },
+    // {
+    //   service: 'google',
+    //   status: 'FAILED',
+    // },
+    // {
+    //   service: 'ibm',
+    //   status: 'COMPLETED',
+    //   data: {
+    //     text: 'HEHEJEJ',
+    //   },
+    // },
+  ],
 })
 
 export const loadingState = atom({
