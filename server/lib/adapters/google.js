@@ -3,8 +3,10 @@ const fs = require('fs')
 
 const client = new speech.SpeechClient()
 
+let requests = {}
+
 module.exports = {
-  transcribe: async (audioBuffer, mimetype) => {
+  transcribe: async (audioBuffer, mimetype, id) => {
     const audio = {
       content: audioBuffer.toString('base64'),
     }
@@ -15,16 +17,42 @@ module.exports = {
       enableSpeakerDiarization: true,
     }
 
-    const [response] = await client.recognize({
+    const [operation] = await client.longRunningRecognize({
       audio,
       config,
     })
-    const text = response.results
-      .map((result, i) => `${i + 1}\t${result.alternatives[0].transcript}`)
-      .join('\n')
-    return {
-      service: 'google',
-      text,
+    requests[id] = operation
+  },
+  getTranscription: async (id) => {
+    const operation = requests[id]
+    if (!operation) {
+      return {
+        status: 'FAILED',
+      }
     }
+
+    const status = await client.checkLongRunningRecognizeProgress(
+      operation.name
+    )
+
+    if (status.latestResponse.done) {
+      const response = status.result
+      const text = response.results
+        .map((result, i) => `${i + 1}\t${result.alternatives[0].transcript}`)
+        .join('\n')
+
+      return {
+        status: 'COMPLETED',
+        data: {
+          text,
+        },
+      }
+    }
+    return {
+      status: 'IN_PROGRESS',
+    }
+  },
+  clear: (id) => {
+    delete requests[id]
   },
 }

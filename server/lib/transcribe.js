@@ -1,8 +1,8 @@
 const uuid = require('uuid').v4
 const adapters = {
-  // google: require('./adapters/google'),
-  // ibm: require('./adapters/ibm'),
-  // azure: require('./adapters/azure'),
+  google: require('./adapters/google'),
+  ibm: require('./adapters/ibm'),
+  azure: require('./adapters/azure'),
   aws: require('./adapters/aws'),
 }
 
@@ -37,6 +37,11 @@ const getTranscriptionStatus = async (id) => {
       }
     })
   )
+
+  // clear cached requests when all are done
+  if (services.every((s) => s.status === 'COMPLETED')) {
+    SERVICES.forEach((service) => adapters[service].clear())
+  }
 
   return services
 }

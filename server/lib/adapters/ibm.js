@@ -10,25 +10,64 @@ const speechToText = new SpeechToTextV1({
   serviceUrl: IBM_URL,
 })
 
+let requests = {}
+
 module.exports = {
-  transcribe: async (audioBuffer, mimetype) => {
-    const recognizeParams = {
+  transcribe: async (audioBuffer, mimetype, id) => {
+    const params = {
       audio: audioBuffer,
       contentType: mimetype,
       speakerLabels: true,
     }
 
-    const { result } = await speechToText.recognize(recognizeParams)
+    try {
+      const { result } = await speechToText.createJob(params)
+      requests[id] = result
+    } catch (e) {
+      console.log(e)
+    }
+  },
+  getTranscription: async (id) => {
+    let result
+    try {
+      const response = await speechToText.checkJob({ id: requests[id].id })
+      result = response.result
+    } catch (error) {
+      console.log(error)
+      return {
+        status: 'FAILED',
+      }
+    }
 
-    const text = result.results
-      .map((data, i) => `${i + 1}\t${data.alternatives[0].transcript}`)
-      .join('\n')
+    if (result && result.status === 'completed') {
+      let texts = []
+      if (result.results[0] && result.results[0].results) {
+        texts = result.results[0].results
+      } else if (result.results && result.results[0].alternatives) {
+        texts = result.results
+      }
 
-    console.log(JSON.stringify(result, null, 2))
+      const text = texts
+        .map((data, i) => {
+          if (data.alternatives && data.alternatives[0]) {
+            return `${i + 1}\t${data.alternatives[0].transcript}`
+          }
+        })
+        .join('\n')
+
+      return {
+        status: 'COMPLETED',
+        data: {
+          text,
+        },
+      }
+    }
 
     return {
-      service: 'ibm',
-      text,
+      status: 'IN_PROGRESS',
     }
+  },
+  clear: (id) => {
+    delete requests[id]
   },
 }

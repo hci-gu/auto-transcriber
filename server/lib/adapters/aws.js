@@ -31,7 +31,7 @@ const transcribe = async (audioBuffer, mimetype, id) => {
   const params = {
     TranscriptionJobName: id,
     Media: { MediaFileUri: fileUri },
-    MediaFormat: 'mp3',
+    MediaFormat: mimetype === 'audio/mp3' ? 'mp3' : 'wav',
     OutputBucketName: AWS_BUCKET_NAME,
     LanguageCode: 'en-US',
   }
@@ -95,4 +95,5 @@ module.exports = {
       data,
     }
   },
+  clear: (id) => {},
 }

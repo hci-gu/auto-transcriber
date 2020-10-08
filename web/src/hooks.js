@@ -39,7 +39,8 @@ export const useGetTranscriptionStatus = (id) => {
       setTranscriptionState(transcriptions)
     }
     if (id != null) {
-      interval = setInterval(getStatus, 1000)
+      getStatus()
+      interval = setInterval(getStatus, 2500)
     }
   }, [id, setTranscriptionState])
 }

@@ -6,50 +6,52 @@ const speechConfig = sdk.SpeechConfig.fromSubscription(
 )
 speechConfig.speechRecognitionLanguage = 'en-US'
 
+let requests = {}
+
 module.exports = {
-  transcribe: (audioBufer) => {
-    return new Promise((resolve) => {
-      const pushStream = sdk.AudioInputStream.createPushStream()
-      const audioConfig = sdk.AudioConfig.fromStreamInput(pushStream)
-      pushStream.write(audioBufer)
-      pushStream.close()
+  transcribe: (audioBuffer, mimetype, id) => {
+    const pushStream = sdk.AudioInputStream.createPushStream(
+      sdk.AudioStreamFormat.getWaveFormatPCM(16000, 16, 1)
+    )
+    const audioConfig = sdk.AudioConfig.fromStreamInput(pushStream)
+    pushStream.write(audioBuffer)
+    pushStream.close()
 
-      const recognizer = new sdk.SpeechRecognizer(speechConfig, audioConfig)
+    let recognizer = new sdk.SpeechRecognizer(speechConfig, audioConfig)
 
-      recognizer.recognizing = (s, e) => {
-        console.log(`RECOGNIZING: Text=${e.result.text}`)
-      }
-
-      recognizer.recognized = (s, e) => {
-        if (e.result.reason == ResultReason.RecognizedSpeech) {
-          console.log(`RECOGNIZED: Text=${e.result.text}`)
-        } else if (e.result.reason == ResultReason.NoMatch) {
-          console.log('NOMATCH: Speech could not be recognized.')
+    recognizer.recognized = (s, e) => {
+      try {
+        const result = JSON.parse(e.privResult.privJson)
+        if (result && result.RecognitionStatus === 'Success') {
+          if (!requests[id].data) requests[id].data = { text: '' }
+          const length = requests[id].data.text.split('\n').length
+          requests[id].data.text += `${length}\t${result.DisplayText}\n`
         }
+      } catch (e) {}
+    }
+
+    recognizer.sessionStopped = () => {
+      recognizer.stopContinuousRecognitionAsync()
+      if (requests[id].data.text) {
+        requests[id].status = 'COMPLETED'
+      } else {
+        requests[id].status = 'FAILED'
       }
+    }
 
-      recognizer.canceled = (s, e) => {
-        console.log(`CANCELED: Reason=${e.reason}`)
+    requests[id] = {
+      status: 'IN_PROGRESS',
+    }
 
-        if (e.reason == CancellationReason.Error) {
-          console.log(`"CANCELED: ErrorCode=${e.errorCode}`)
-          console.log(`"CANCELED: ErrorDetails=${e.errorDetails}`)
-          console.log('CANCELED: Did you update the subscription info?')
-        }
-
-        recognizer.stopContinuousRecognitionAsync()
-      }
-
-      recognizer.sessionStopped = (s, e) => {
-        console.log('\n    Session stopped event.', s, e)
-        recognizer.stopContinuousRecognitionAsync()
-        resolve({
-          service: 'azure',
-          text: 'asdhasdjkashd',
-        })
-      }
-
-      recognizer.startContinuousRecognitionAsync()
-    })
+    recognizer.startContinuousRecognitionAsync()
+  },
+  getTranscription: (id) => {
+    if (requests[id]) return requests[id]
+    return {
+      status: 'FAILED',
+    }
+  },
+  clear: (id) => {
+    delete requests[id]
   },
 }
