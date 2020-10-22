@@ -8,13 +8,17 @@ let requests = {}
 module.exports = {
   transcribe: async (audioBuffer, mimetype, id) => {
     const audio = {
-      content: audioBuffer.toString('base64'),
+      content: audioBuffer.buffer.toString('base64'),
     }
     const config = {
       encoding: mimetype === 'audio/mp3' ? 'MP3' : 'WAV',
-      sampleRateHertz: 16000,
+      sampleRateHertz: audioBuffer.sampleRate,
       languageCode: 'en-US',
       enableSpeakerDiarization: true,
+    }
+    if (audioBuffer.numberOfChannels > 1) {
+      config.audioChannelCount = audioBuffer.numberOfChannels
+      config.enableSeparateRecognitionPerChannel = true
     }
 
     const [operation] = await client.longRunningRecognize({
@@ -45,6 +49,7 @@ module.exports = {
         status: 'COMPLETED',
         data: {
           text,
+          raw: response.results,
         },
       }
     }

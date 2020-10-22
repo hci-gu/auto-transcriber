@@ -15,7 +15,7 @@ let requests = {}
 module.exports = {
   transcribe: async (audioBuffer, mimetype, id) => {
     const params = {
-      audio: audioBuffer,
+      audio: audioBuffer.buffer,
       contentType: mimetype,
       speakerLabels: true,
     }
@@ -59,6 +59,7 @@ module.exports = {
         status: 'COMPLETED',
         data: {
           text,
+          raw: texts,
         },
       }
     }

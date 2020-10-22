@@ -1,5 +1,4 @@
 const AWS = require('aws-sdk')
-const uuid = require('uuid').v4
 const mime = require('mime-types')
 
 const { AWS_BUCKET_NAME } = process.env
@@ -12,7 +11,7 @@ const transcribe = async (audioBuffer, mimetype, id) => {
   const payload = {
     Key: `Audio/${fileName}`,
     Bucket: AWS_BUCKET_NAME,
-    Body: audioBuffer,
+    Body: audioBuffer.buffer,
     ContentType: mimetype,
   }
   const fileUri = `https://s3.amazonaws.com/${AWS_BUCKET_NAME}/Audio/${fileName}`
@@ -59,7 +58,7 @@ const getDataForTranscription = async (id) => {
     .map((transcriptObject, i) => `${i + 1}\t${transcriptObject.transcript}`)
     .join('\n')
 
-  return { text }
+  return { text, raw: transcripts }
 }
 
 const getTranscriptionStatus = async (id) => {
